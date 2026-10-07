@@ -8,6 +8,8 @@ export const STAGE = {
   CAPACITY: 4,
   /** 빈 병 수 */
   EMPTY_BOTTLES: 2,
+  /** 여분 병 용량 (받기 버튼, 횟수 제한 없음) */
+  SPARE_CAPACITY: 1,
   /** 한 판 되돌리기 횟수 */
   UNDO_LIMIT: 3,
 

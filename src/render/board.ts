@@ -51,15 +51,15 @@ function fillRounded(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   ctx.fillRect((x + 2) * s, (y + h - 1) * s, (w - 4) * s, s);
 }
 
-function isComplete(b: Bottle, capacity: number) {
-  return b.length === capacity && b.every((c) => c.revealed && c.typeId === b[0].typeId);
+function isComplete(b: Bottle, capacity: number, cap: number) {
+  return cap === capacity && b.length === capacity && b.every((c) => c.revealed && c.typeId === b[0].typeId);
 }
 
 function drawBottle(ctx: CanvasRenderingContext2D, scene: Scene, r: BottleRect, selected: boolean) {
   const { layout, colors } = scene;
   const s = layout.scale;
   const bw = layout.bottleW;
-  const bh = layout.bottleH;
+  const bh = r.h / s;
   ctx.save();
   ctx.translate(r.x, r.y);
   const line = selected ? colors.selected : colors.ink;
@@ -141,7 +141,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, scene: Scene) {
   layout.bottles.forEach((r, bi) => {
     const bottle = state.bottles[bi];
     drawBottle(ctx, scene, r, scene.selected === bi);
-    if (bottle && isComplete(bottle, state.capacity) && !(flight && flight.to === bi)) drawStar(ctx, scene, r);
+    if (bottle && isComplete(bottle, state.capacity, r.cap) && !(flight && flight.to === bi)) drawStar(ctx, scene, r);
     if (!bottle) return;
 
     // 날아오는 중인 블록은 아직 도착 병에 그리지 않는다
@@ -165,12 +165,12 @@ export function drawScene(ctx: CanvasRenderingContext2D, scene: Scene) {
       // 떠오른 덩어리는 아래와 떨어진다 (연결이 풀림)
       const down = joins(cell, bottle[i - 1]) && !(lifted && i === bottle.length - run && scene.lift > 0);
       const up = i + 1 < visible && joins(cell, bottle[i + 1]);
-      const pos = cellPosition(layout, r, i, state.capacity);
+      const pos = cellPosition(layout, r, i);
       if (i >= squashFrom && squash > 0) {
         // 덩어리 전체가 바닥 쪽을 기준으로 눌렸다 돌아온다
         const sy = 1 - 0.12 * squash;
         const h = layout.cellH * s;
-        const groupBottom = cellPosition(layout, r, squashFrom, state.capacity).y + h;
+        const groupBottom = cellPosition(layout, r, squashFrom).y + h;
         const y = groupBottom - (i - squashFrom) * h * sy - h;
         drawCell(ctx, scene, cell, up, down, pos.x, Math.round(y), 1 + 0.06 * squash, sy);
       } else drawCell(ctx, scene, cell, up, down, pos.x, pos.y - (lifted ? liftPx : 0));
@@ -190,8 +190,8 @@ function drawFlight(ctx: CanvasRenderingContext2D, scene: Scene, f: Flight) {
   // 1단계(0~0.6): 출발 병 위 → 도착 병 위로 호를 그리며, 2단계(0.6~1): 도착 병 안으로 내려앉음
   const t = f.t;
   f.cells.forEach((cell, k) => {
-    const a = cellPosition(layout, from, f.fromIndex + k, state.capacity);
-    const b = cellPosition(layout, to, f.toIndex + k, state.capacity);
+    const a = cellPosition(layout, from, f.fromIndex + k);
+    const b = cellPosition(layout, to, f.toIndex + k);
     const ay = a.y - liftPx;
     // 도착 병 위 대기 자리: 입구보다 위
     const hoverY = Math.min(ay, to.y - (k + 1) * layout.cellH * s - s);

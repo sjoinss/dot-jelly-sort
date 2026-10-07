@@ -76,7 +76,7 @@ test("에디터: 안쪽만 칠하고, 스포이드는 칠한 색 또는 몸통 �
 test("판 배치: 병이 겹치지 않고 화면 안에, 정수 배율", () => {
   for (const [w, h] of [[720, 1100], [1170, 1700], [360, 560]] as const)
     for (const n of [5, 10, 14, 16]) {
-      const l = layoutBoard(w, h, n, 16, 14, 4);
+      const l = layoutBoard(w, h, new Array(n).fill(4), 16, 14);
       assert.equal(l.bottles.length, n);
       assert.ok(Number.isInteger(l.scale) && l.scale >= 1);
       for (const b of l.bottles) {
@@ -89,4 +89,15 @@ test("판 배치: 병이 겹치지 않고 화면 안에, 정수 배율", () => {
         if (a.y === b.y) assert.ok(a.x + a.w < b.x);
       }
     }
+});
+
+test("판 배치: 여분 병(1칸)은 키가 작고 같은 줄 병과 바닥이 맞는다", () => {
+  const l = layoutBoard(720, 1100, [4, 4, 4, 4, 1], 16, 14);
+  const spare = l.bottles[4];
+  assert.equal(spare.cap, 1);
+  for (const b of l.bottles.slice(0, 4)) assert.ok(spare.h < b.h);
+  // 같은 줄(바닥이 같은 높이대)에 있는 병과 바닥을 맞춘다
+  const sameRow = l.bottles.slice(0, 4).filter((b) => b.y + b.h > spare.y && b.y < spare.y + spare.h);
+  assert.ok(sameRow.length > 0);
+  for (const b of sameRow) assert.equal(b.y + b.h, spare.y + spare.h);
 });

@@ -12,7 +12,10 @@ export type Snapshot = { bottles: Bottle[]; moves: number };
 
 export type GameState = {
   bottles: Bottle[];
+  /** 스테이지 병 용량 (클리어 판정 기준) */
   capacity: number;
+  /** 병마다 용량. 여분 병은 STAGE.SPARE_CAPACITY */
+  capacities: number[];
   moves: number;
   undoLeft: number;
   /** 되돌리기용 직전 상태 (최대 UNDO_LIMIT개) */
@@ -26,6 +29,7 @@ export function createGame(bottles: number[][], capacity: number, hiddenMode: bo
   const state: GameState = {
     bottles: bottles.map((b) => b.map((typeId) => ({ typeId, revealed: !hiddenMode }))),
     capacity,
+    capacities: bottles.map(() => capacity),
     moves: 0,
     undoLeft: STAGE.UNDO_LIMIT,
     history: [],
@@ -57,13 +61,29 @@ export function topRun(bottle: Bottle): number {
   return n;
 }
 
+export function capacityOf(state: GameState, bottle: number): number {
+  return state.capacities[bottle] ?? state.capacity;
+}
+
+/**
+ * 여분 병 받기: 빈 병(용량 STAGE.SPARE_CAPACITY) 하나를 끝에 더한다. 횟수 제한 없음, 이동으로 세지 않는다.
+ * 다시하기하면 사라진다(처음 상태로). 클리어하려면 여분 병은 비어 있어야 한다 — 한 종류가 다 모일 수 없으므로.
+ */
+export function addSpareBottle(state: GameState): GameState {
+  return {
+    ...state,
+    bottles: [...state.bottles, []],
+    capacities: [...state.bottles.map((_, i) => capacityOf(state, i)), STAGE.SPARE_CAPACITY],
+  };
+}
+
 /** 옮길 수 있으면 실제로 옮겨지는 개수, 아니면 0. 빈칸이 모자라면 들어가는 만큼만 */
 export function moveCount(state: GameState, from: number, to: number): number {
   if (from === to) return 0;
   const src = state.bottles[from];
   const dst = state.bottles[to];
   if (!src || !dst || src.length === 0) return 0;
-  const space = state.capacity - dst.length;
+  const space = capacityOf(state, to) - dst.length;
   if (space <= 0) return 0;
   const t = src[src.length - 1].typeId;
   if (dst.length > 0 && dst[dst.length - 1].typeId !== t) return 0;
@@ -87,7 +107,9 @@ export function applyMove(state: GameState, from: number, to: number): { state: 
 export function undo(state: GameState): GameState | null {
   if (state.undoLeft <= 0 || state.history.length === 0) return null;
   const prev = state.history[state.history.length - 1];
-  const bottles = state.hiddenMode ? keepRevealed(prev.bottles, state.bottles) : prev.bottles;
+  // 그 뒤에 받은 여분 병은 남겨 둔다 (그때는 비어 있었다)
+  const padded = [...prev.bottles, ...state.bottles.slice(prev.bottles.length).map(() => [])];
+  const bottles = state.hiddenMode ? keepRevealed(padded, state.bottles) : padded;
   return {
     ...state,
     bottles,

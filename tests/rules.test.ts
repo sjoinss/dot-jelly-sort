@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyMove, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, topRun, undo } from "../src/game/rules";
+import { addSpareBottle, applyMove, capacityOf, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, topRun, undo } from "../src/game/rules";
 
 const ids = (g: ReturnType<typeof createGame>) => g.bottles.map((b) => b.map((c) => c.typeId));
 
@@ -72,4 +72,25 @@ test("별: 기준 이동 수 대비", () => {
   assert.equal(starsFor(10, 10), 3);
   assert.equal(starsFor(14, 10), 2);
   assert.equal(starsFor(30, 10), 1);
+});
+
+test("여분 병: 1칸, 몇 번이든, 이동으로 세지 않고, 되돌려도 남고, 다시하기하면 사라진다", () => {
+  const start = createGame([[0, 1, 0, 1], [1, 0, 1, 0]], 4, false);
+  assert.ok(isStuck(start));
+  let g = addSpareBottle(addSpareBottle(start));
+  assert.equal(g.bottles.length, 4);
+  assert.equal(capacityOf(g, 2), 1);
+  assert.equal(g.moves, 0);
+  assert.ok(!isStuck(g));
+  assert.equal(moveCount(g, 0, 2), 1, "1칸만 들어감");
+  g = applyMove(g, 0, 2)!.state;
+  assert.equal(moveCount(g, 1, 2), 0, "가득 찬 여분 병");
+  g = undo(g)!;
+  assert.equal(g.bottles.length, 4, "되돌려도 여분 병은 남음");
+  assert.deepEqual(g.bottles[2], []);
+  // 여분 병에 블록이 남아 있으면 클리어가 아니다
+  const solvedButSpare = addSpareBottle(createGame([[0, 0, 0], [1, 1, 1, 1]], 4, false));
+  const moved = applyMove(solvedButSpare, 0, 2)!.state;
+  assert.ok(!isSolved(moved));
+  assert.equal(resetGame(start).bottles.length, 2, "다시하기는 처음 상태");
 });

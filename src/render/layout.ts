@@ -18,13 +18,15 @@ export const LIFT = 7;
 export const GAP_X = 3;
 export const GAP_Y = 4;
 
-export type BottleRect = { x: number; y: number; w: number; h: number; index: number };
+/** 병 하나. 용량이 작은 병(여분 병)은 키가 작고, 같은 줄의 다른 병과 바닥을 맞춘다 */
+export type BottleRect = { x: number; y: number; w: number; h: number; index: number; cap: number };
 
 export type BoardLayout = {
   /** 기기 픽셀 / 단위 */
   scale: number;
   rows: number;
   bottleW: number;
+  /** 가장 큰 병의 높이 (단위) */
   bottleH: number;
   /** 병 몸통 사각형 (기기 px, 입구 테두리 포함, LIFT 미포함) */
   bottles: BottleRect[];
@@ -45,11 +47,12 @@ export function splitRows(n: number, rows: number): number[] {
 }
 
 /**
- * 판 크기(기기 px) 안에 n개 병을 가장 크게 배치.
+ * 판 크기(기기 px) 안에 병들(용량 목록)을 가장 크게 배치.
  * 줄 수를 1~4로 바꿔 보고 가장 큰 배율을 고른다(같으면 줄이 적은 쪽).
  */
-export function layoutBoard(width: number, height: number, n: number, cellW: number, cellH: number, capacity: number): BoardLayout {
-  const { w: bw, h: bh } = bottleSize(cellW, cellH, capacity);
+export function layoutBoard(width: number, height: number, capacities: number[], cellW: number, cellH: number): BoardLayout {
+  const n = capacities.length;
+  const { w: bw, h: bh } = bottleSize(cellW, cellH, Math.max(1, ...capacities));
   let best = { scale: 1, rows: 1 };
   for (let rows = 1; rows <= Math.min(4, n); rows++) {
     const perRow = Math.ceil(n / rows);
@@ -70,12 +73,15 @@ export function layoutBoard(width: number, height: number, n: number, cellW: num
     const rowW = (count * bw + (count - 1) * GAP_X) * scale;
     const left = Math.floor((width - rowW) / 2);
     for (let i = 0; i < count; i++) {
+      const cap = capacities[index];
+      const h = bottleSize(cellW, cellH, cap).h;
       bottles.push({
         x: left + i * (bw + GAP_X) * scale,
-        y: top + r * (rowH + GAP_Y * scale) + LIFT * scale,
+        y: top + r * (rowH + GAP_Y * scale) + (LIFT + bh - h) * scale,
         w: bw * scale,
-        h: bh * scale,
+        h: h * scale,
         index: index++,
+        cap,
       });
     }
   });
@@ -83,9 +89,9 @@ export function layoutBoard(width: number, height: number, n: number, cellW: num
 }
 
 /** 병 안 i번째 칸(아래부터)의 왼쪽 위 (기기 px) */
-export function cellPosition(layout: BoardLayout, bottle: BottleRect, i: number, capacity: number) {
+export function cellPosition(layout: BoardLayout, bottle: BottleRect, i: number) {
   const s = layout.scale;
   const x = bottle.x + (WALL + PAD) * s;
-  const bottomOfStack = bottle.y + (RIM_H + HEAD + layout.cellH * capacity) * s;
+  const bottomOfStack = bottle.y + (RIM_H + HEAD + layout.cellH * bottle.cap) * s;
   return { x, y: bottomOfStack - (i + 1) * layout.cellH * s };
 }

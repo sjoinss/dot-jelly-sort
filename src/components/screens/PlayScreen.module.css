@@ -141,6 +141,17 @@
     calc(var(--spacing-md) + env(safe-area-inset-left));
 }
 
+/* 여분 병 받기: 판 아래 가운데. 횟수 제한이 없어 눈에 띄지 않게 크림색 */
+.spareRow {
+  display: flex;
+  justify-content: center;
+}
+
+.spareRow > button {
+  margin-bottom: 0;
+  font-size: var(--font-size-body);
+}
+
 .stuckActions {
   display: flex;
   flex-wrap: wrap;

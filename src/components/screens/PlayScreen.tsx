@@ -12,7 +12,7 @@ import { PixelIcon } from "../ui/PixelIcon";
 import { useToast } from "../ui/Toast";
 import { STAGE } from "@/config/stage";
 import { generateLevel } from "@/game/levels";
-import { applyMove, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, undo, type Bottle, type GameState } from "@/game/rules";
+import { addSpareBottle, applyMove, capacityOf, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, undo, type Bottle, type GameState } from "@/game/rules";
 import { recordClear } from "@/lib/progress";
 import { drawScene, type Flight, type Landing, type SceneColors } from "@/render/board";
 import { layoutBoard, type BoardLayout } from "@/render/layout";
@@ -44,11 +44,12 @@ function readColors(): SceneColors {
   };
 }
 
-function describeBottle(b: Bottle, capacity: number) {
-  if (b.length === 0) return "비어 있음";
+function describeBottle(b: Bottle, capacity: number, cap: number) {
+  const spare = cap !== capacity ? `여분 병(${cap}칸), ` : "";
+  if (b.length === 0) return `${spare}비어 있음`;
   const items = b.map((c) => (c.revealed ? `${c.typeId + 1}번` : "가려진 블록")).join(", ");
   const done = b.length === capacity && b.every((c) => c.revealed && c.typeId === b[0].typeId);
-  return `아래부터 ${items}${done ? ". 완성" : ""}`;
+  return `${spare}아래부터 ${items}${done ? ". 완성" : ""}`;
 }
 
 export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
@@ -103,8 +104,8 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
 
   const layout: BoardLayout | null = useMemo(() => {
     if (!size) return null;
-    return layoutBoard(Math.round(size.w * size.dpr), Math.round(size.h * size.dpr), game.bottles.length, bank.cellW, bank.cellH, game.capacity);
-  }, [size, game.bottles.length, game.capacity, bank.cellW, bank.cellH]);
+    return layoutBoard(Math.round(size.w * size.dpr), Math.round(size.h * size.dpr), game.capacities, bank.cellW, bank.cellH);
+  }, [size, game.capacities, bank.cellW, bank.cellH]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -286,6 +287,16 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
     toast.announce("처음부터 다시 시작했어요. 되돌리기 3번.");
   };
 
+  /** 여분 병(1칸) 받기: 제한 없음, 이동으로 세지 않음, 다시하기하면 사라짐 */
+  const doSpare = () => {
+    if (cleared) return;
+    finishMotion();
+    const next = addSpareBottle(gameRef.current);
+    gameRef.current = next;
+    setGame(next);
+    toast.announce(`${next.bottles.length}번에 ${STAGE.SPARE_CAPACITY}칸짜리 여분 병을 놓았어요.`);
+  };
+
   // 키보드 보조: Z 되돌리기, R 다시하기, Esc 선택 해제
   const keysRef = useRef({ doUndo, doReset, setLift, selected });
   keysRef.current = { doUndo, doReset, setLift, selected };
@@ -364,7 +375,7 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
                     height: (r.h + padTop + padBottom) / dpr,
                   }}
                   aria-pressed={isSel}
-                  aria-label={`${r.index + 1}번 병: ${describeBottle(b, game.capacity)}${isSel ? ". 선택됨" : ""}`}
+                  aria-label={`${r.index + 1}번 병: ${describeBottle(b, game.capacity, capacityOf(game, r.index))}${isSel ? ". 선택됨" : ""}`}
                   onClick={() => tapBottle(r.index)}
                 />
               );
@@ -383,14 +394,24 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
                 <Button icon="undo" disabled={!canUndo} onClick={doUndo}>
                   되돌리기 ({game.undoLeft})
                 </Button>
+                <Button icon="plus" onClick={doSpare}>
+                  여분 병
+                </Button>
                 <Button variant="primary" icon="reset" onClick={doReset}>
                   다시하기
                 </Button>
               </div>
             }
           >
-            {canUndo ? "되돌려서 다른 길을 찾거나 처음부터 다시 해 보세요." : "처음부터 다시 해 보세요. 다시하면 되돌리기도 3번으로 돌아와요."}
+            {canUndo ? "되돌리거나 여분 병을 받아서 다른 길을 찾아보세요." : "여분 병을 받거나 처음부터 다시 해 보세요. 다시하면 되돌리기도 3번으로 돌아와요."}
           </InlineMessage>
+        )}
+        {!stuck && (
+          <div className={styles.spareRow}>
+            <Button variant="ghost" icon="plus" onClick={doSpare} disabled={cleared !== null}>
+              여분 병 받기 ({STAGE.SPARE_CAPACITY}칸)
+            </Button>
+          </div>
         )}
       </div>
 

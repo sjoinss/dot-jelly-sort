@@ -24,6 +24,8 @@ export type Level = StageParams & {
   bottles: number[][];
   /** 찾은 풀이의 이동 수 (최소는 아닐 수 있음) */
   par: number;
+  /** 생성에 실패해 대신 쓴 쉬운 판 (테스트에서 한 번도 나오지 않아야 한다) */
+  fallback?: true;
 };
 
 export function isInfinite(stage: number) {
@@ -66,7 +68,7 @@ export function generateLevel(stage: number): Level {
     cache.set(stage, level);
     return level;
   }
-  // 이론상 오지 않는다 (테스트로 1~120번을 확인). 그래도 풀 수 있는 판을 돌려준다: 완성 상태에서 한 번 섞은 판
+  // 이론상 오지 않는다 (테스트로 1~400번, 수동으로 1~3000번을 확인). 그래도 풀 수 있는 판을 돌려준다: 완성 상태에서 한 번 섞은 판
   const fallback = fallbackLevel(params);
   cache.set(stage, fallback);
   return fallback;
@@ -106,7 +108,7 @@ function fallbackLevel(p: StageParams): Level {
     bottles[p.types].push(bottles[0].pop()!);
     bottles[p.types + (p.empty > 1 ? 1 : 0)].push(bottles[1].pop()!);
   }
-  return { ...p, bottles, par: 2 };
+  return { ...p, bottles, par: 2, fallback: true };
 }
 
 // ── 풀이기 ──

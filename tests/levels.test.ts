@@ -13,9 +13,10 @@ test("같은 스테이지는 늘 같은 레벨 (시드 결정적)", () => {
   }
 });
 
-test("1~150 스테이지: 모양(가득 찬 병 + 빈 병 2개)과 종류별 개수, 풀이로 실제 클리어", () => {
-  for (let s = 1; s <= 150; s++) {
+test("1~400 스테이지(일반 50 + 무한 최고 난이도 구간까지): 모양(가득 찬 병 + 빈 병 2개)과 종류별 개수, 풀이로 실제 클리어", () => {
+  for (let s = 1; s <= 400; s++) {
     const lv = generateLevel(s);
+    assert.ok(!lv.fallback, `stage ${s}: 생성 실패로 대체 판 사용`);
     assert.equal(lv.bottles.length, lv.types + lv.empty, `stage ${s}`);
     const counts = new Map<number, number>();
     for (const b of lv.bottles) {
