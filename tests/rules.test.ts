@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addSpareBottle, applyMove, capacityOf, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, topRun, undo } from "../src/game/rules";
+import { addSpareBottle, applyMove, canAddSpare, capacityOf, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, topRun, undo } from "../src/game/rules";
 
 const ids = (g: ReturnType<typeof createGame>) => g.bottles.map((b) => b.map((c) => c.typeId));
 
@@ -74,23 +74,34 @@ test("별: 기준 이동 수 대비", () => {
   assert.equal(starsFor(30, 10), 1);
 });
 
-test("여분 병: 1칸, 몇 번이든, 이동으로 세지 않고, 되돌려도 남고, 다시하기하면 사라진다", () => {
+test("여분 칸: 한 판 최대 4번, 1칸 병 하나가 4칸까지 커지고, 이동으로 세지 않고, 되돌려도 남고, 다시하기하면 사라진다", () => {
   const start = createGame([[0, 1, 0, 1], [1, 0, 1, 0]], 4, false);
   assert.ok(isStuck(start));
-  let g = addSpareBottle(addSpareBottle(start));
-  assert.equal(g.bottles.length, 4);
+  let g = addSpareBottle(start);
+  assert.equal(g.bottles.length, 3, "첫 번째는 병이 생김");
   assert.equal(capacityOf(g, 2), 1);
   assert.equal(g.moves, 0);
   assert.ok(!isStuck(g));
   assert.equal(moveCount(g, 0, 2), 1, "1칸만 들어감");
   g = applyMove(g, 0, 2)!.state;
   assert.equal(moveCount(g, 1, 2), 0, "가득 찬 여분 병");
+  g = addSpareBottle(g);
+  assert.equal(g.bottles.length, 3, "두 번째부터는 같은 병이 커짐");
+  assert.equal(capacityOf(g, 2), 2);
+  assert.deepEqual(g.bottles[2].map((c) => c.typeId), [1], "안의 블록은 그대로");
+  g = addSpareBottle(addSpareBottle(g));
+  assert.equal(capacityOf(g, 2), 4);
+  assert.equal(g.spare, 4);
+  assert.ok(!canAddSpare(g));
+  assert.equal(addSpareBottle(g), g, "5번째는 안 됨");
   g = undo(g)!;
-  assert.equal(g.bottles.length, 4, "되돌려도 여분 병은 남음");
+  assert.equal(g.bottles.length, 3, "되돌려도 여분 병은 남음");
   assert.deepEqual(g.bottles[2], []);
-  // 여분 병에 블록이 남아 있으면 클리어가 아니다
-  const solvedButSpare = addSpareBottle(createGame([[0, 0, 0], [1, 1, 1, 1]], 4, false));
-  const moved = applyMove(solvedButSpare, 0, 2)!.state;
-  assert.ok(!isSolved(moved));
-  assert.equal(resetGame(start).bottles.length, 2, "다시하기는 처음 상태");
+  assert.equal(capacityOf(g, 2), 4);
+  // 4칸 미만 여분 병에 블록이 남아 있으면 클리어가 아니다
+  const one = applyMove(addSpareBottle(createGame([[0, 0, 0], [1, 1, 1, 1]], 4, false)), 0, 2)!.state;
+  assert.ok(!isSolved(one));
+  const r = resetGame(start);
+  assert.equal(r.bottles.length, 2, "다시하기는 처음 상태");
+  assert.equal(r.spare, 0);
 });

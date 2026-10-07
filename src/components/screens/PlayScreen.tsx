@@ -12,7 +12,7 @@ import { PixelIcon } from "../ui/PixelIcon";
 import { useToast } from "../ui/Toast";
 import { STAGE } from "@/config/stage";
 import { generateLevel } from "@/game/levels";
-import { addSpareBottle, applyMove, capacityOf, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, undo, type Bottle, type GameState } from "@/game/rules";
+import { addSpareBottle, applyMove, canAddSpare, capacityOf, spareIndex, createGame, isSolved, isStuck, moveCount, resetGame, starsFor, undo, type Bottle, type GameState } from "@/game/rules";
 import { recordClear } from "@/lib/progress";
 import { drawScene, type Flight, type Landing, type SceneColors } from "@/render/board";
 import { layoutBoard, type BoardLayout } from "@/render/layout";
@@ -44,8 +44,8 @@ function readColors(): SceneColors {
   };
 }
 
-function describeBottle(b: Bottle, capacity: number, cap: number) {
-  const spare = cap !== capacity ? `여분 병(${cap}칸), ` : "";
+function describeBottle(b: Bottle, capacity: number, cap: number, isSpare: boolean) {
+  const spare = isSpare ? `여분 병(${cap}칸), ` : "";
   if (b.length === 0) return `${spare}비어 있음`;
   const items = b.map((c) => (c.revealed ? `${c.typeId + 1}번` : "가려진 블록")).join(", ");
   const done = b.length === capacity && b.every((c) => c.revealed && c.typeId === b[0].typeId);
@@ -287,14 +287,15 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
     toast.announce("처음부터 다시 시작했어요. 되돌리기 3번.");
   };
 
-  /** 여분 병(1칸) 받기: 제한 없음, 이동으로 세지 않음, 다시하기하면 사라짐 */
+  /** 여분 칸 받기: 한 판 최대 4번(1칸 병 → 4칸 병), 이동으로 세지 않음, 다시하기하면 사라짐 */
   const doSpare = () => {
-    if (cleared) return;
+    if (cleared || !canAddSpare(gameRef.current)) return;
     finishMotion();
     const next = addSpareBottle(gameRef.current);
     gameRef.current = next;
     setGame(next);
-    toast.announce(`${next.bottles.length}번에 ${STAGE.SPARE_CAPACITY}칸짜리 여분 병을 놓았어요.`);
+    const left = STAGE.SPARE_MAX - next.spare;
+    toast.announce(`${next.bottles.length}번 여분 병이 ${next.spare}칸이 됐어요. ${left ? `${left}번 더 받을 수 있어요.` : "더 받을 수 없어요."}`);
   };
 
   // 키보드 보조: Z 되돌리기, R 다시하기, Esc 선택 해제
@@ -375,7 +376,7 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
                     height: (r.h + padTop + padBottom) / dpr,
                   }}
                   aria-pressed={isSel}
-                  aria-label={`${r.index + 1}번 병: ${describeBottle(b, game.capacity, capacityOf(game, r.index))}${isSel ? ". 선택됨" : ""}`}
+                  aria-label={`${r.index + 1}번 병: ${describeBottle(b, game.capacity, capacityOf(game, r.index), r.index === spareIndex(game))}${isSel ? ". 선택됨" : ""}`}
                   onClick={() => tapBottle(r.index)}
                 />
               );
@@ -394,22 +395,32 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
                 <Button icon="undo" disabled={!canUndo} onClick={doUndo}>
                   되돌리기 ({game.undoLeft})
                 </Button>
-                <Button icon="plus" onClick={doSpare}>
-                  여분 병
-                </Button>
+                {canAddSpare(game) && (
+                  <Button icon="plus" onClick={doSpare}>
+                    여분 칸
+                  </Button>
+                )}
                 <Button variant="primary" icon="reset" onClick={doReset}>
                   다시하기
                 </Button>
               </div>
             }
           >
-            {canUndo ? "되돌리거나 여분 병을 받아서 다른 길을 찾아보세요." : "여분 병을 받거나 처음부터 다시 해 보세요. 다시하면 되돌리기도 3번으로 돌아와요."}
+            {canUndo || canAddSpare(game)
+              ? "되돌리거나 여분 칸을 받아서 다른 길을 찾아보세요."
+              : "처음부터 다시 해 보세요. 다시하면 되돌리기·여분 칸도 처음으로 돌아와요."}
           </InlineMessage>
         )}
         {!stuck && (
           <div className={styles.spareRow}>
-            <Button variant="ghost" icon="plus" onClick={doSpare} disabled={cleared !== null}>
-              여분 병 받기 ({STAGE.SPARE_CAPACITY}칸)
+            <Button
+              variant="ghost"
+              icon="plus"
+              onClick={doSpare}
+              disabled={cleared !== null || !canAddSpare(game)}
+              aria-label={`${game.spare === 0 ? "여분 병 받기" : "여분 칸 늘리기"}, ${game.spare}/${STAGE.SPARE_MAX}칸 받음`}
+            >
+              {game.spare === 0 ? "여분 병 받기" : canAddSpare(game) ? "여분 칸 늘리기" : "여분 칸 다 받음"} ({game.spare}/{STAGE.SPARE_MAX})
             </Button>
           </div>
         )}

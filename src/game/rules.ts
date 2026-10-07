@@ -14,8 +14,10 @@ export type GameState = {
   bottles: Bottle[];
   /** 스테이지 병 용량 (클리어 판정 기준) */
   capacity: number;
-  /** 병마다 용량. 여분 병은 STAGE.SPARE_CAPACITY */
+  /** 병마다 용량. 여분 병은 받은 칸 수 */
   capacities: number[];
+  /** 이번 판에 받은 여분 칸 (0~STAGE.SPARE_MAX). 1 이상이면 마지막 병이 여분 병 */
+  spare: number;
   moves: number;
   undoLeft: number;
   /** 되돌리기용 직전 상태 (최대 UNDO_LIMIT개) */
@@ -30,6 +32,7 @@ export function createGame(bottles: number[][], capacity: number, hiddenMode: bo
     bottles: bottles.map((b) => b.map((typeId) => ({ typeId, revealed: !hiddenMode }))),
     capacity,
     capacities: bottles.map(() => capacity),
+    spare: 0,
     moves: 0,
     undoLeft: STAGE.UNDO_LIMIT,
     history: [],
@@ -65,16 +68,26 @@ export function capacityOf(state: GameState, bottle: number): number {
   return state.capacities[bottle] ?? state.capacity;
 }
 
+/** 여분 병 번호 (아직 없으면 -1) */
+export function spareIndex(state: GameState): number {
+  return state.spare > 0 ? state.bottles.length - 1 : -1;
+}
+
+export function canAddSpare(state: GameState): boolean {
+  return state.spare < STAGE.SPARE_MAX;
+}
+
 /**
- * 여분 병 받기: 빈 병(용량 STAGE.SPARE_CAPACITY) 하나를 끝에 더한다. 횟수 제한 없음, 이동으로 세지 않는다.
- * 다시하기하면 사라진다(처음 상태로). 클리어하려면 여분 병은 비어 있어야 한다 — 한 종류가 다 모일 수 없으므로.
+ * 여분 칸 받기 (한 판 최대 STAGE.SPARE_MAX번, 이동으로 세지 않음).
+ * 처음엔 1칸짜리 여분 병을 끝에 놓고, 그다음부터는 그 병을 1칸씩 키운다 → 최대 4칸짜리 병 하나.
+ * 되돌려도 남고, 다시하기하면 사라진다. 4칸 미만인 여분 병에 블록이 남아 있으면 클리어가 아니다.
  */
 export function addSpareBottle(state: GameState): GameState {
-  return {
-    ...state,
-    bottles: [...state.bottles, []],
-    capacities: [...state.bottles.map((_, i) => capacityOf(state, i)), STAGE.SPARE_CAPACITY],
-  };
+  if (!canAddSpare(state)) return state;
+  const capacities = state.bottles.map((_, i) => capacityOf(state, i));
+  if (state.spare === 0) return { ...state, bottles: [...state.bottles, []], capacities: [...capacities, 1], spare: 1 };
+  capacities[capacities.length - 1] += 1;
+  return { ...state, capacities, spare: state.spare + 1 };
 }
 
 /** 옮길 수 있으면 실제로 옮겨지는 개수, 아니면 0. 빈칸이 모자라면 들어가는 만큼만 */
@@ -159,7 +172,7 @@ export function isStuck(state: GameState): boolean {
 }
 
 export function resetGame(initial: GameState): GameState {
-  return { ...initial, undoLeft: STAGE.UNDO_LIMIT, history: [], moves: 0 };
+  return { ...initial, undoLeft: STAGE.UNDO_LIMIT, history: [], moves: 0, spare: 0 };
 }
 
 /** 이동 횟수 → 별 0~3 (클리어하면 최소 1) */

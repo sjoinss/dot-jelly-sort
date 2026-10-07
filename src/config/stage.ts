@@ -8,8 +8,8 @@ export const STAGE = {
   CAPACITY: 4,
   /** 빈 병 수 */
   EMPTY_BOTTLES: 2,
-  /** 여분 병 용량 (받기 버튼, 횟수 제한 없음) */
-  SPARE_CAPACITY: 1,
+  /** 여분 칸: 한 판에 이만큼 받을 수 있다. 처음 받으면 1칸짜리 여분 병, 그다음부터 그 병이 1칸씩 커진다 */
+  SPARE_MAX: 4,
   /** 한 판 되돌리기 횟수 */
   UNDO_LIMIT: 3,
 
