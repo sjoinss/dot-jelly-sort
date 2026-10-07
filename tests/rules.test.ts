@@ -53,6 +53,14 @@ test("가림: 맨 위만 보이고, 드러난 블록은 되돌려도 계속 보�
   assert.deepEqual(g.bottles[0].map((c) => c.revealed), [false, true, true], "공개 상태 유지");
 });
 
+test("가림: 맨 위와 같은 종류가 바로 아래 이어져 있으면 덩어리 전체가 보인다", () => {
+  let g = createGame([[0, 1, 2, 2], [3, 1, 1, 1], []], 4, true);
+  assert.deepEqual(g.bottles[0].map((c) => c.revealed), [false, false, true, true]);
+  assert.deepEqual(g.bottles[1].map((c) => c.revealed), [false, true, true, true]);
+  g = applyMove(g, 0, 2)!.state;
+  assert.deepEqual(g.bottles[0].map((c) => c.revealed), [false, true], "옮긴 뒤 새 맨 위 덩어리 공개");
+});
+
 test("막힘 감지: 쓸모 있는 이동이 없을 때만", () => {
   assert.ok(isStuck(createGame([[0, 1, 0, 1], [1, 0, 1, 0]], 4, false)));
   assert.ok(!isStuck(createGame([[0, 1, 0, 1], [1, 0, 1, 0], []], 4, false)));

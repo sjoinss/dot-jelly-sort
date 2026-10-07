@@ -335,7 +335,7 @@ export function PlayScreen({ stage, onExit, onHome, onNext }: Props) {
       </header>
 
       {level.hidden && game.moves === 0 && (
-        <p className={styles.notice}>가림 스테이지: 병마다 맨 위 블록만 보여요. 옮기면 아래가 드러나요.</p>
+        <p className={styles.notice}>가림 스테이지: 병마다 맨 위 블록(같은 종류로 이어진 덩어리)만 보여요. 옮기면 아래가 드러나요.</p>
       )}
       {stage === 1 && game.moves === 0 && !level.hidden && (
         <p className={styles.notice}>병을 눌러 고르고, 옮길 병을 눌러요. 같은 종류끼리 한 병에 모으면 성공!</p>

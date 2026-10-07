@@ -39,9 +39,11 @@ function revealTops(state: GameState): GameState {
   if (!state.hiddenMode) return state;
   let changed = false;
   const bottles = state.bottles.map((b) => {
-    if (b.length === 0 || b[b.length - 1].revealed) return b;
+    // 맨 위와 같은 종류가 바로 아래로 이어져 있으면 그 덩어리 전체가 보인다 (원작과 같음)
+    const run = topRun(b);
+    if (b.slice(b.length - run).every((c) => c.revealed)) return b;
     changed = true;
-    return [...b.slice(0, -1), { ...b[b.length - 1], revealed: true }];
+    return b.map((c, i) => (i >= b.length - run && !c.revealed ? { ...c, revealed: true } : c));
   });
   return changed ? { ...state, bottles } : state;
 }
