@@ -1,0 +1,200 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-background);
+  background-image: radial-gradient(var(--color-background-dot) 2px, transparent 2.5px);
+  background-size: 20px 20px;
+}
+
+/* 위: 뒤로 · 스테이지/이동 · 되돌리기/다시하기 */
+.hud {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: calc(var(--spacing-md) + env(safe-area-inset-top)) calc(var(--spacing-md) + env(safe-area-inset-right))
+    var(--spacing-sm) calc(var(--spacing-md) + env(safe-area-inset-left));
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.stage {
+  padding: 2px var(--spacing-md);
+  border: var(--game-outline);
+  border-radius: var(--radius-full);
+  background: var(--color-secondary);
+  box-shadow: 0 3px 0 var(--color-line);
+  font-size: var(--font-size-subheading);
+  line-height: var(--line-height-tight);
+  white-space: nowrap;
+}
+
+.moves {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-size: var(--font-size-caption);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.moves strong {
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-subheading);
+}
+
+.tag {
+  padding: 0 6px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+  background: var(--color-butter);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tools {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.undoWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* 남은 되돌리기 횟수 (숫자로) */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+  background: var(--color-butter);
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.notice {
+  margin: 0 var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--font-size-caption);
+  text-align: center;
+}
+
+.board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: var(--spacing-sm) calc(var(--spacing-sm) + env(safe-area-inset-right)) 0 calc(var(--spacing-sm) + env(safe-area-inset-left));
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  image-rendering: pixelated;
+}
+
+.hits {
+  position: absolute;
+  inset: 0;
+}
+
+/* 병마다 투명한 버튼: 키보드·스크린리더·클릭을 한 번에 */
+.hit {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.hit:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 0;
+}
+
+.bottom {
+  min-height: var(--spacing-md);
+  padding: var(--spacing-sm) calc(var(--spacing-md) + env(safe-area-inset-right)) calc(var(--spacing-md) + env(safe-area-inset-bottom))
+    calc(var(--spacing-md) + env(safe-area-inset-left));
+}
+
+.stuckActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.resultStars {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.bigStarOn {
+  color: #f2b705;
+  filter: drop-shadow(0 3px 0 var(--color-line));
+  animation: star-pop var(--duration-base) var(--ease-pop) both;
+}
+
+.bigStarOn:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.bigStarOn:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.bigStarOff {
+  color: var(--color-border);
+}
+
+@keyframes star-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.resultMoves {
+  font-family: var(--font-display);
+  font-size: var(--font-size-subheading);
+}
+
+.resultMoves strong {
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-page-title);
+}
+
+.resultHelp {
+  color: var(--color-muted);
+  font-size: var(--font-size-caption);
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".test-build",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "incremental": false,
+    "plugins": []
+  },
+  "include": ["tests/**/*.ts", "src/config/**/*.ts", "src/game/**/*.ts", "src/lib/**/*.ts", "src/sprites/**/*.ts", "src/skins/skinFetch.ts", "src/editor/jellyEdit.ts", "src/editor/history.ts", "src/editor/color.ts"],
+  "exclude": ["node_modules"]
+}

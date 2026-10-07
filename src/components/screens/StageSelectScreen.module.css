@@ -1,0 +1,131 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 56px;
+  padding: var(--spacing-xs) 0;
+  border: var(--game-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 3px 0 var(--color-line);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.stage:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+}
+
+.stage:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--color-line);
+}
+
+.stage:disabled {
+  background: var(--color-surface-alt);
+  color: var(--color-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* 다음 차례: 채우기 색 + 점선이 아닌 두꺼운 테두리로도 구분 */
+.current {
+  background: var(--color-primary);
+}
+
+.current:hover:not(:disabled) {
+  background: var(--color-primary);
+}
+
+.num {
+  font-size: var(--font-size-subheading);
+  line-height: 1;
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+}
+
+.starOn {
+  color: var(--color-ink);
+}
+
+.starOff {
+  color: var(--color-border-strong);
+  opacity: 0.45;
+}
+
+.hiddenTag {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+  background: var(--color-butter);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.infinite {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: var(--game-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-secondary-soft);
+  box-shadow: 0 var(--edge-height) 0 var(--color-line);
+}
+
+.infiniteText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.infiniteTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-section-title);
+}
+
+.help {
+  color: var(--color-muted);
+  font-size: var(--font-size-caption);
+}
+
+.infinite > button {
+  flex: none;
+  margin-bottom: 0;
+}

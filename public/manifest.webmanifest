@@ -1,0 +1,18 @@
+{
+  "name": "도트 젤리 소팅",
+  "short_name": "젤리 소팅",
+  "description": "같은 젤리끼리 한 병에! 내가 꾸민 도트 젤리로 하는 소팅 퍼즐",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "theme_color": "#fff4f8",
+  "background_color": "#fff4f8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

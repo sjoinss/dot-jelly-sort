@@ -1,0 +1,57 @@
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.card {
+  padding: var(--spacing-md);
+  border: var(--game-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 var(--edge-height) 0 var(--color-line);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-section-title);
+}
+
+.sectionHelp {
+  color: var(--color-muted);
+  font-size: var(--font-size-caption);
+}
+
+.switches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+/* 스위치: 줄마다 점선으로 나눠 어느 설명이 어느 스위치인지 분명하게 */
+.switches > * + * {
+  padding-top: var(--spacing-xs);
+  border-top: 2px dashed var(--color-border);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--spacing-sm);
+}
+
+/* 위험 동작: 점선으로 나눠 다른 버튼과 떨어뜨린다 */
+.danger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-top: var(--spacing-sm);
+  border-top: 2px dashed var(--color-border);
+}

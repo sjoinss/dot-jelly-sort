@@ -1,0 +1,228 @@
+/* 꾸밀 대상: 가로로 넘기는 칩 */
+.targets {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex: none;
+  margin: 0 calc(-1 * var(--spacing-md));
+  padding: 4px var(--spacing-md) 8px;
+  overflow-x: auto;
+}
+
+.chip {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 48px;
+  min-height: 56px;
+  padding: 4px 6px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 3px 0 var(--color-line);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+
+.baseChip {
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-caption);
+  white-space: nowrap;
+}
+
+.chip[aria-checked="true"] {
+  background: var(--color-primary);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--color-line);
+}
+
+.chipNum {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* 따로 꾸민 종류 표시 (점 + aria-label 글자) */
+.customDot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+  background: var(--color-butter);
+}
+
+.status {
+  flex: none;
+  color: var(--color-muted);
+  font-size: var(--font-size-caption);
+  text-align: center;
+}
+
+/* 확대 편집 뷰 + 오른쪽 미리보기 */
+.work {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-sm);
+  min-height: 0;
+}
+
+.previews {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  width: 72px;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 6px 4px 4px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.preview figcaption {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.colors {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+}
+
+.current {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 4px;
+  border: var(--game-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 3px 0 var(--color-line);
+  cursor: pointer;
+}
+
+.swatchFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-line);
+  border-radius: 8px;
+}
+
+.recent {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 2px 6px;
+  overflow-x: auto;
+  list-style: none;
+}
+
+.swatch {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+/* 누르는 영역은 위아래로 넓혀 44px (보이는 원은 36px) */
+.swatch::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+}
+
+/* 고른 색: 두꺼운 링 (색이 아닌 모양으로도 구분) */
+.swatch[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 5px var(--color-ink);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0 var(--spacing-sm);
+}
+
+.actions > button {
+  flex: 1 1 0;
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-body);
+  white-space: nowrap;
+}
+
+.bodyLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bodyDot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-full);
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-xs);
+  border: 2px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: 0 3px 0 var(--color-line);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+
+.preset canvas {
+  image-rendering: pixelated;
+}
+
+.preset:hover {
+  background: var(--color-surface-alt);
+}
